@@ -267,6 +267,73 @@ main {
   background: var(--bg-alt);
 }
 
+/* ---------- Language toggle ---------- */
+.nav-lang-item {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-alt);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, transform 0.15s ease;
+}
+
+.lang-toggle:hover,
+.lang-toggle:focus-visible {
+  background: var(--tag-bg);
+  color: var(--link);
+  border-color: var(--link);
+  text-decoration: none;
+}
+
+.lang-toggle:active {
+  transform: translateY(1px);
+}
+
+.lang-toggle[aria-pressed="true"] {
+  cursor: default;
+}
+
+.lang-toggle-langs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lang-sep {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Emphasize the currently active language inside the toggle. */
+.lang-toggle[data-lang="en"] .lang-en,
+.lang-toggle[data-lang="hi"] .lang-hi {
+  color: var(--link);
+  font-weight: 700;
+}
+
+.lang-toggle[data-lang="en"] .lang-hi,
+.lang-toggle[data-lang="hi"] .lang-en {
+  color: var(--muted);
+  font-weight: 500;
+}
+
 /* ---------- Hero ---------- */
 .hero {
   padding: 4.5rem 0 3.5rem;
@@ -466,6 +533,21 @@ main {
 
   .primary-nav a {
     padding: 0.5rem 0.85rem;
+  }
+
+  .nav-lang-item {
+    margin-top: 0;
+    margin-left: 0.5rem;
+    padding-top: 0;
+    padding-left: 0.5rem;
+    border-top: 0;
+    border-left: 1px solid var(--border);
+  }
+
+  .lang-toggle {
+    width: auto;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.85rem;
   }
 }
 
