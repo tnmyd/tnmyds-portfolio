@@ -25,18 +25,25 @@
           <li><a href="#skills" class="nav-link" data-i18n="nav.skills">Skills</a></li>
           <li><a href="#contact" class="nav-link" data-i18n="nav.contact">Contact</a></li>
           <li class="nav-lang-item">
-            <button
-              type="button"
-              class="lang-toggle"
-              data-lang="en"
-              data-i18n-aria="aria.langToggle"
-            >
-              <span class="lang-toggle-langs">
-                <span class="lang-en" aria-hidden="true">EN</span>
-                <span class="lang-sep" aria-hidden="true">/</span>
-                <span class="lang-hi" aria-hidden="true">हिंदी</span>
-              </span>
-            </button>
+            <div class="lang-dropdown" data-i18n-aria="aria.languageSelector">
+              <button
+                type="button"
+                class="lang-dropdown-trigger"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-label="Select language"
+                data-i18n-aria="aria.langToggle"
+              >
+                <span class="lang-current" data-i18n="lang.currentLabel">English</span>
+                <svg class="lang-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <ul class="lang-options" role="listbox" aria-label="Languages" hidden>
+                <li role="option" class="lang-option" data-lang="en" aria-selected="true" tabindex="-1" data-i18n="lang.english">English</li>
+                <li role="option" class="lang-option" data-lang="hi" aria-selected="false" tabindex="-1" data-i18n="lang.hindi">हिंदी</li>
+              </ul>
+            </div>
           </li>
         </ul>
       </nav>

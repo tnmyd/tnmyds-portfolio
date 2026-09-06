@@ -66,6 +66,12 @@
       'aria.primaryNav': 'Primary',
       'aria.navToggle': 'Toggle navigation',
       'aria.langToggle': 'Switch language',
+      'aria.languageSelector': 'Language selector',
+
+      // Language selector labels
+      'lang.currentLabel': 'English',
+      'lang.english': 'English',
+      'lang.hindi': '\u0939\u093F\u0902\u0926\u0940',
       'aria.socialLinks': 'Social links',
       'aria.technicalSkills': 'Technical skills',
       'social.github': 'GitHub',
@@ -136,6 +142,12 @@
       'aria.primaryNav': '\u092E\u0941\u0916\u094D\u092F',
       'aria.navToggle': '\u0928\u0947\u0935\u093F\u0917\u0947\u0936\u0928 \u091F\u0949\u0917\u0932 \u0915\u0930\u0947\u0902',
       'aria.langToggle': '\u092D\u093E\u0937\u093E \u092C\u0926\u0932\u0947\u0902',
+      'aria.languageSelector': '\u092D\u093E\u0937\u093E \u091A\u092F\u0928\u093F\u092F\u0902',
+
+      // Language selector labels
+      'lang.currentLabel': '\u0939\u093F\u0902\u0926\u0940',
+      'lang.english': '\u0905\u0902\u0917\u094D\u0930\u0947\u091C\u093C\u0940',
+      'lang.hindi': '\u0939\u093F\u0902\u0926\u0940',
       'aria.socialLinks': '\u0938\u094B\u0936\u0932 \u092E\u0940\u0921\u093F\u092F\u093E \u0932\u093F\u0902\u0915',
       'aria.technicalSkills': '\u0924\u0915\u0928\u0940\u0915\u0940 \u0915\u094C\u0936\u0932',
       'social.github': 'GitHub',
@@ -227,14 +239,21 @@
       }
     });
 
-    const langToggle = document.querySelector('.lang-toggle');
-    if (langToggle) {
-      const langLabel = lang === 'en' ? 'English' : '\u0939\u093F\u0902\u0926\u0940';
-      langToggle.setAttribute(
-        'aria-label',
-        `${translations[lang]['aria.langToggle']}, ${langLabel}`
-      );
-      langToggle.setAttribute('data-lang', lang);
+    // Reflect the active language inside the dropdown options.
+    const langOptions = document.querySelectorAll('.lang-option');
+    langOptions.forEach((option) => {
+      const isSelected = option.getAttribute('data-lang') === lang;
+      option.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    });
+
+    // Keep the trigger's accessible label in sync with the chosen language.
+    const langTrigger = document.querySelector('.lang-dropdown-trigger');
+    if (langTrigger) {
+      const langKey = 'aria.langToggle';
+      const label = translations[lang][langKey];
+      if (label) {
+        langTrigger.setAttribute('aria-label', label);
+      }
     }
   }
 
@@ -242,11 +261,6 @@
     if (!SUPPORTED_LANGS.includes(lang)) return;
     applyTranslations(lang);
     safeStorage.set(STORAGE_KEY, lang);
-  }
-
-  function toggleLanguage() {
-    const current = document.documentElement.lang || DEFAULT_LANG;
-    setLanguage(current === 'en' ? 'hi' : 'en');
   }
 
   // ---------------------------------------------------------------------
@@ -299,14 +313,121 @@
       });
     }
 
-    // --- Language toggle -----------------------------------------------
-    const langToggle = document.querySelector('.lang-toggle');
-    if (langToggle) {
-      langToggle.addEventListener('click', () => {
-        toggleLanguage();
-        if (isMobile() && primaryNav) {
-          primaryNav.classList.remove('open');
-          if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+    // --- Language dropdown ---------------------------------------------
+    const langDropdown = document.querySelector('.lang-dropdown');
+    const langTrigger = document.querySelector('.lang-dropdown-trigger');
+    const langOptionsList = document.querySelector('.lang-options');
+    const langOptions = Array.from(
+      document.querySelectorAll('.lang-option')
+    );
+
+    if (langDropdown && langTrigger && langOptionsList) {
+      const setDropdownOpen = (open) => {
+        langOptionsList.hidden = !open;
+        langTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) {
+          const currentLang = document.documentElement.lang || DEFAULT_LANG;
+          const activeIndex = langOptions.findIndex(
+            (opt) => opt.getAttribute('data-lang') === currentLang
+          );
+          const target =
+            langOptions[activeIndex >= 0 ? activeIndex : 0] || null;
+          if (target) target.focus();
+        }
+      };
+
+      const closeDropdown = () => {
+        if (langOptionsList.hidden) return;
+        setDropdownOpen(false);
+        langTrigger.focus();
+      };
+
+      langTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = langTrigger.getAttribute('aria-expanded') === 'true';
+        setDropdownOpen(!isOpen);
+      });
+
+      langOptions.forEach((option) => {
+        option.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const nextLang = option.getAttribute('data-lang');
+          if (!nextLang) return;
+          setLanguage(nextLang);
+          // Close the listbox; keep focus on the trigger for keyboard users.
+          langOptionsList.hidden = true;
+          langTrigger.setAttribute('aria-expanded', 'false');
+          langTrigger.focus();
+          // On mobile, also dismiss the open primary nav menu.
+          if (isMobile() && primaryNav) {
+            primaryNav.classList.remove('open');
+            if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+          }
+        });
+      });
+
+      // Close when clicking outside the dropdown.
+      document.addEventListener('click', (e) => {
+        if (langOptionsList.hidden) return;
+        if (langDropdown.contains(e.target)) return;
+        langOptionsList.hidden = true;
+        langTrigger.setAttribute('aria-expanded', 'false');
+      });
+
+      // Close when keyboard focus leaves the dropdown.
+      langDropdown.addEventListener('focusout', (e) => {
+        if (langOptionsList.hidden) return;
+        if (!langDropdown.contains(e.relatedTarget)) {
+          langOptionsList.hidden = true;
+          langTrigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      // Keyboard support: Escape closes, Arrow keys move selection,
+      // Enter/Space select the focused option, Tab moves focus out.
+      langTrigger.addEventListener('keydown', (e) => {
+        const isOpen = langTrigger.getAttribute('aria-expanded') === 'true';
+        if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setDropdownOpen(true);
+        } else if (e.key === 'Escape' && isOpen) {
+          e.preventDefault();
+          closeDropdown();
+        }
+      });
+
+      langOptionsList.addEventListener('keydown', (e) => {
+        const currentIndex = langOptions.indexOf(document.activeElement);
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const next = langOptions[(currentIndex + 1) % langOptions.length];
+          if (next) next.focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const prev =
+            langOptions[(currentIndex - 1 + langOptions.length) % langOptions.length];
+          if (prev) prev.focus();
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          if (langOptions[0]) langOptions[0].focus();
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          if (langOptions.length) {
+            langOptions[langOptions.length - 1].focus();
+          }
+        } else if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const active = document.activeElement;
+          if (active && active.classList.contains('lang-option')) {
+            active.click();
+          }
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          closeDropdown();
+        } else if (e.key === 'Tab') {
+          // Let Tab move focus out naturally and close the dropdown.
+          langOptionsList.hidden = true;
+          langTrigger.setAttribute('aria-expanded', 'false');
         }
       });
     }
