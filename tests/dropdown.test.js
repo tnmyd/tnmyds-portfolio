@@ -42,7 +42,7 @@ function run() {
   virtualConsole.on('jsdomError', () => {});
 
   const dom = new JSDOM(html, {
-    runScripts: 'outside-only',
+    runScripts: 'dangerously',
     pretendToBeVisual: true,
     virtualConsole,
     url: 'http://localhost/',
